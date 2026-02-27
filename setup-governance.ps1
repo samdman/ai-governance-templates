@@ -36,37 +36,37 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Colors for output
-function Write-Success {
-    param([string]$Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+# Helper functions
+function Write-SuccessMsg {
+    param([string]$Msg)
+    Write-Host "[OK] $Msg" -ForegroundColor Green
 }
 
-function Write-Info {
-    param([string]$Message)
-    Write-Host "ℹ $Message" -ForegroundColor Cyan
+function Write-InfoMsg {
+    param([string]$Msg)
+    Write-Host "[INFO] $Msg" -ForegroundColor Cyan
 }
 
-function Write-Warning {
-    param([string]$Message)
-    Write-Host "⚠ $Message" -ForegroundColor Yellow
+function Write-WarnMsg {
+    param([string]$Msg)
+    Write-Host "[WARN] $Msg" -ForegroundColor Yellow
 }
 
-function Write-Error {
-    param([string]$Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+function Write-ErrMsg {
+    param([string]$Msg)
+    Write-Host "[ERROR] $Msg" -ForegroundColor Red
 }
 
 # Banner
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "===================================================" -ForegroundColor Cyan
 Write-Host "  AI Governance Templates Setup" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "===================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Interactive tier selection if not provided
 if (-not $Tier) {
-    Write-Info "Select governance tier:"
+    Write-InfoMsg "Select governance tier:"
     Write-Host "  1) Lite      - Lean production-safe baseline"
     Write-Host "  2) Standard  - Modular monolith + AI-ready defaults"
     Write-Host "  3) Enterprise - SaaS-safe + AI workload governance"
@@ -78,7 +78,7 @@ if (-not $Tier) {
         '2' { 'Standard' }
         '3' { 'Enterprise' }
         default { 
-            Write-Error "Invalid choice. Exiting."
+            Write-ErrMsg "Invalid choice. Exiting."
             exit 1
         }
     }
@@ -87,7 +87,7 @@ if (-not $Tier) {
 # Interactive tool selection if not provided
 if (-not $Tool) {
     Write-Host ""
-    Write-Info "Select AI tool:"
+    Write-InfoMsg "Select AI tool:"
     Write-Host "  1) Copilot - GitHub Copilot"
     Write-Host "  2) Gemini  - Google Gemini"
     Write-Host "  3) Claude  - Anthropic Claude"
@@ -99,15 +99,15 @@ if (-not $Tool) {
         '2' { 'gemini' }
         '3' { 'claude' }
         default { 
-            Write-Error "Invalid choice. Exiting."
+            Write-ErrMsg "Invalid choice. Exiting."
             exit 1
         }
     }
 }
 
 Write-Host ""
-Write-Success "Configuration: Tier=$Tier, Tool=$Tool"
-Write-Info "Target directory: $TargetPath"
+Write-SuccessMsg "Configuration: Tier=$Tier, Tool=$Tool"
+Write-InfoMsg "Target directory: $TargetPath"
 Write-Host ""
 
 # Ensure target directory exists
@@ -121,17 +121,17 @@ New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
 try {
     # Download templates
-    Write-Info "Downloading governance templates..."
+    Write-InfoMsg "Downloading governance templates..."
     
     # Try git clone first
     $gitAvailable = Get-Command git -ErrorAction SilentlyContinue
     if ($gitAvailable) {
         try {
             git clone --depth 1 --quiet $TemplateRepo $tempDir 2>$null
-            Write-Success "Templates downloaded via git"
+            Write-SuccessMsg "Templates downloaded via git"
         }
         catch {
-            Write-Warning "Git clone failed, trying zip download..."
+            Write-WarnMsg "Git clone failed, trying zip download..."
             $gitAvailable = $null
         }
     }
@@ -152,10 +152,10 @@ try {
             Remove-Item $extractedFolder.FullName -Force
             Remove-Item $zipPath -Force
             
-            Write-Success "Templates downloaded via zip"
+            Write-SuccessMsg "Templates downloaded via zip"
         }
         catch {
-            Write-Error "Failed to download templates: $_"
+            Write-ErrMsg "Failed to download templates: $_"
             exit 1
         }
     }
@@ -166,15 +166,15 @@ try {
     $toolAdapter = Join-Path $tempDir "$($Tool.ToUpper()).md"
     
     if (-not (Test-Path $canonicalFile)) {
-        Write-Error "Template validation failed: AI-GOVERNANCE.md not found"
+        Write-ErrMsg "Template validation failed: AI-GOVERNANCE.md not found"
         exit 1
     }
     if (-not (Test-Path $tierFolder)) {
-        Write-Error "Template validation failed: $Tier tier folder not found"
+        Write-ErrMsg "Template validation failed: $Tier tier folder not found"
         exit 1
     }
     
-    Write-Success "Template structure validated"
+    Write-SuccessMsg "Template structure validated"
     Write-Host ""
     
     # Function to copy file with conflict handling
@@ -186,10 +186,10 @@ try {
         )
         
         if (Test-Path $Destination) {
-            Write-Warning "File already exists: $Description"
+            Write-WarnMsg "File already exists: $Description"
             $overwrite = Read-Host "Overwrite? (y/N)"
             if ($overwrite -ne 'y' -and $overwrite -ne 'Y') {
-                Write-Info "Skipped: $Description"
+                Write-InfoMsg "Skipped: $Description"
                 return $false
             }
         }
@@ -200,12 +200,12 @@ try {
         }
         
         Copy-Item -Path $Source -Destination $Destination -Force
-        Write-Success "Copied: $Description"
+        Write-SuccessMsg "Copied: $Description"
         return $true
     }
     
     # Copy canonical policy
-    Write-Info "Installing governance files..."
+    Write-InfoMsg "Installing governance files..."
     $canonicalDest = Join-Path $TargetPath "AI-GOVERNANCE.md"
     Copy-WithPrompt -Source $canonicalFile -Destination $canonicalDest -Description "AI-GOVERNANCE.md" | Out-Null
     
@@ -232,7 +232,7 @@ try {
     
     # Create Copilot-specific integration file
     if ($Tool -eq 'copilot') {
-        Write-Info "Creating GitHub Copilot integration..."
+        Write-InfoMsg "Creating GitHub Copilot integration..."
         $copilotInstructionsPath = Join-Path $TargetPath ".github\copilot-instructions.md"
         $copilotContent = @"
 # GitHub Copilot Instructions
@@ -269,33 +269,36 @@ If there are conflicts:
 3. ``COPILOT.md`` (lowest priority)
 "@
         
-        Copy-WithPrompt -Source ([System.IO.Path]::GetTempFileName()) -Destination $copilotInstructionsPath -Description ".github/copilot-instructions.md" | Out-Null
-        Set-Content -Path $copilotInstructionsPath -Value $copilotContent -Force
-        Write-Success "Created .github/copilot-instructions.md"
+        $copilotDir = Split-Path $copilotInstructionsPath -Parent
+        if (-not (Test-Path $copilotDir)) {
+            New-Item -ItemType Directory -Path $copilotDir -Force | Out-Null
+        }
+        Set-Content -Path $copilotInstructionsPath -Value $copilotContent -Force -Encoding UTF8
+        Write-SuccessMsg "Created .github/copilot-instructions.md"
     }
     
     # Success summary
     Write-Host ""
-    Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "===================================================" -ForegroundColor Green
     Write-Host "  Installation Complete!" -ForegroundColor Green
-    Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "===================================================" -ForegroundColor Green
     Write-Host ""
     
-    Write-Success "Governance tier: $Tier"
-    Write-Success "AI tool: $Tool"
+    Write-SuccessMsg "Governance tier: $Tier"
+    Write-SuccessMsg "AI tool: $Tool"
     Write-Host ""
     
-    Write-Info "Files installed:"
-    Write-Host "  • AI-GOVERNANCE.md (canonical policy)"
-    Write-Host "  • ai-governance/* ($Tier tier rules)"
-    Write-Host "  • $toolAdapterName (tool adapter)"
+    Write-InfoMsg "Files installed:"
+    Write-Host "  - AI-GOVERNANCE.md (canonical policy)"
+    Write-Host "  - ai-governance/* ($Tier tier rules)"
+    Write-Host "  - $toolAdapterName (tool adapter)"
     if ($Tool -eq 'copilot') {
-        Write-Host "  • .github/copilot-instructions.md (Copilot integration)"
+        Write-Host "  - .github/copilot-instructions.md (Copilot integration)"
     }
     Write-Host ""
     
     # Tool-specific next steps
-    Write-Info "Next steps:"
+    Write-InfoMsg "Next steps:"
     switch ($Tool) {
         'copilot' {
             Write-Host "  1. GitHub Copilot will automatically discover .github/copilot-instructions.md"
@@ -321,11 +324,11 @@ If there are conflicts:
     }
     
     Write-Host ""
-    Write-Info "Verification checklist:"
-    Write-Host "  ☐ Review AI-GOVERNANCE.md to understand policy precedence"
-    Write-Host "  ☐ Review ai-governance/ tier files for your tech stack"
-    Write-Host "  ☐ Customize governance rules if needed (edit tier files)"
-    Write-Host "  ☐ Commit governance files to version control"
+    Write-InfoMsg "Verification checklist:"
+    Write-Host "  [ ] Review AI-GOVERNANCE.md to understand policy precedence"
+    Write-Host "  [ ] Review ai-governance/ tier files for your tech stack"
+    Write-Host "  [ ] Customize governance rules if needed (edit tier files)"
+    Write-Host "  [ ] Commit governance files to version control"
     Write-Host ""
 }
 finally {

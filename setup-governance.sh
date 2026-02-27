@@ -20,10 +20,10 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Output functions
-print_success() { echo -e "${GREEN}✓${NC} $1"; }
-print_info() { echo -e "${CYAN}ℹ${NC} $1"; }
-print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
-print_error() { echo -e "${RED}✗${NC} $1"; }
+print_success() { echo -e "${GREEN}[OK]${NC} $1"; }
+print_info() { echo -e "${CYAN}[INFO]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Configuration
 TIER="${1:-}"
@@ -33,9 +33,9 @@ TEMPLATE_REPO="${TEMPLATE_REPO:-https://github.com/samdman/ai-governance-templat
 
 # Banner
 echo ""
-echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}===================================================${NC}"
 echo -e "${CYAN}  AI Governance Templates Setup${NC}"
-echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}===================================================${NC}"
 echo ""
 
 # Interactive tier selection if not provided
@@ -252,9 +252,9 @@ fi
 
 # Success summary
 echo ""
-echo -e "${GREEN}═══════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}===================================================${NC}"
 echo -e "${GREEN}  Installation Complete!${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}===================================================${NC}"
 echo ""
 
 print_success "Governance tier: $TIER"
@@ -262,11 +262,11 @@ print_success "AI tool: $TOOL"
 echo ""
 
 print_info "Files installed:"
-echo "  • AI-GOVERNANCE.md (canonical policy)"
-echo "  • ai-governance/* ($TIER tier rules)"
-echo "  • $TOOL_ADAPTER_NAME (tool adapter)"
+echo "  - AI-GOVERNANCE.md (canonical policy)"
+echo "  - ai-governance/* ($TIER tier rules)"
+echo "  - $TOOL_ADAPTER_NAME (tool adapter)"
 if [ "$TOOL" = "copilot" ]; then
-    echo "  • .github/copilot-instructions.md (Copilot integration)"
+    echo "  - .github/copilot-instructions.md (Copilot integration)"
 fi
 echo ""
 
@@ -298,8 +298,8 @@ esac
 
 echo ""
 print_info "Verification checklist:"
-echo "  ☐ Review AI-GOVERNANCE.md to understand policy precedence"
-echo "  ☐ Review ai-governance/ tier files for your tech stack"
-echo "  ☐ Customize governance rules if needed (edit tier files)"
-echo "  ☐ Commit governance files to version control"
+echo "  [ ] Review AI-GOVERNANCE.md to understand policy precedence"
+echo "  [ ] Review ai-governance/ tier files for your tech stack"
+echo "  [ ] Customize governance rules if needed (edit tier files)"
+echo "  [ ] Commit governance files to version control"
 echo ""

@@ -1,10 +1,11 @@
 # Claude Adapter
 
-Use this file with `AI-GOVERNANCE.md` and one selected tier folder.
+Use this file with `PROJECT.md`, `AI-GOVERNANCE.md` and one selected tier folder.
 
 ## Required inputs to Claude
-1. `AI-GOVERNANCE.md`
-2. Exactly one tier policy set:
+1. `PROJECT.md` (project-specific tech stack & preferences)
+2. `AI-GOVERNANCE.md`
+3. Exactly one tier policy set:
    - `Lite/ai-governance/`
    - `Standard/ai-governance/`
    - `Enterprise/ai-governance/`
@@ -18,4 +19,4 @@ When generating implementation output, include:
 5. Risks/improvements
 
 ## Non-authoritative adapter rule
-If this file conflicts with `AI-GOVERNANCE.md` or tier docs, follow canonical/tier policy.
+If this file conflicts with `PROJECT.md`, `AI-GOVERNANCE.md` or tier docs, follow the policy precedence order defined in `AI-GOVERNANCE.md`.

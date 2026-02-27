@@ -8,9 +8,10 @@ This file is the neutral governance entrypoint for AI coding assistants.
 - Points to tier-specific governance docs as authoritative implementation rules.
 
 ## Policy precedence (mandatory)
-1. This file (`AI-GOVERNANCE.md`)
-2. Selected tier docs under `*/ai-governance/`
-3. Tool adapter files (`COPILOT.md`, `GEMINI.md`, `CLAUDE.md`)
+1. Project configuration (`PROJECT.md`) — project-specific tech stack & architectural preferences
+2. This file (`AI-GOVERNANCE.md`) — canonical governance rules
+3. Selected tier docs under `*/ai-governance/` — tier-specific implementation rules
+4. Tool adapter files (`COPILOT.md`, `GEMINI.md`, `CLAUDE.md`) — tool formatting only
 
 If any lower-priority file conflicts with a higher-priority file, follow the higher-priority file.
 

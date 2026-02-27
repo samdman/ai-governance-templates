@@ -44,10 +44,12 @@ The script will:
 1. Clone this repository
 2. Copy one tier folder into your project
 3. Copy `AI-GOVERNANCE.md` to your project root
-4. Copy the appropriate tool adapter (`COPILOT.md`, `GEMINI.md`, or `CLAUDE.md`)
-5. For Copilot: Create `.github/copilot-instructions.md` referencing the governance files
+4. Copy `PROJECT.md` to your project root and customize it with your tech stack
+5. Copy the appropriate tool adapter (`COPILOT.md`, `GEMINI.md`, or `CLAUDE.md`)
+6. For Copilot: Create `.github/copilot-instructions.md` referencing the governance files
 
 ## Governance model
+- Project-specific configuration: `PROJECT.md` (tech stack & architectural preferences).
 - Canonical policy entrypoint: `AI-GOVERNANCE.md` (tool-neutral source of truth).
 - Tier docs remain authoritative for implementation rules:
 	- `Lite/ai-governance/*`
@@ -85,7 +87,13 @@ Pick one folder based on system complexity:
 
 Copy that tier into your project root (or merge into `/ai-governance`).
 
-### 2) Load canonical policy first (required)
+### 2) Customize your project configuration (recommended)
+Copy `PROJECT.md` to your project root and customize:
+- Tech stack (frameworks, libraries, tools)
+- Architectural preferences (naming, patterns, conventions)
+- Project-specific decisions
+
+### 3) Load canonical policy first (required)
 Always provide `AI-GOVERNANCE.md` to your AI tool as the policy entrypoint.
 
 Then specify the chosen tier path, for example:
@@ -93,7 +101,7 @@ Then specify the chosen tier path, for example:
 - `Standard/ai-governance`
 - `Enterprise/ai-governance`
 
-### 3) Apply tool-specific adapter
+### 4) Apply tool-specific adapter
 - GitHub Copilot: use `COPILOT.md`
 - Gemini: use `GEMINI.md`
 - Claude: use `CLAUDE.md`
@@ -113,16 +121,19 @@ Short answer: it depends on the tool.
 - **Gemini / Claude:** Usually no automatic repo pickup.
 	- You should add/upload governance context to the session (or configure persistent project instructions if your Gemini/Claude workspace supports it).
 	- Minimum context to provide:
-		1. `AI-GOVERNANCE.md`
-		2. selected `ai-governance/*` tier files
-		3. tool adapter (`GEMINI.md` or `CLAUDE.md`)
+		1. `PROJECT.md` (your project configuration)
+		2. `AI-GOVERNANCE.md`
+		3. selected `ai-governance/*` tier files
+		4. tool adapter (`GEMINI.md` or `CLAUDE.md`)
 
 When in doubt, re-attach the canonical file + tier docs + adapter at the start of a new conversation.
 
 ## Enforcement pattern
 - Source of truth order:
-	1. `AI-GOVERNANCE.md`
-	2. Selected tier governance docs
-	3. Tool adapter file (`COPILOT.md` / `GEMINI.md` / `CLAUDE.md`)
+	1. `PROJECT.md` (project-specific tech stack & preferences)
+	2. `AI-GOVERNANCE.md` (canonical governance rules)
+	3. Selected tier governance docs (`*/ai-governance/*`)
+	4. Tool adapter file (`COPILOT.md` / `GEMINI.md` / `CLAUDE.md`)
 - Do not duplicate detailed policy text in adapters.
 - Keep policy changes in tier docs and canonical entrypoint.
+- Keep project-specific stack and conventions in `PROJECT.md`.

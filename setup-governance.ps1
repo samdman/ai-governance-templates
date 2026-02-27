@@ -37,10 +37,25 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Colors for output
-function Write-Success { param([string]$Message) Write-Host "✓ $Message" -ForegroundColor Green }
-function Write-Info { param([string]$Message) Write-Host "ℹ $Message" -ForegroundColor Cyan }
-function Write-Warning { param([string]$Message) Write-Host "⚠ $Message" -ForegroundColor Yellow }
-function Write-Error { param([string]$Message) Write-Host "✗ $Message" -ForegroundColor Red }
+function Write-Success {
+    param([string]$Message)
+    Write-Host "✓ $Message" -ForegroundColor Green
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host "ℹ $Message" -ForegroundColor Cyan
+}
+
+function Write-Warning {
+    param([string]$Message)
+    Write-Host "⚠ $Message" -ForegroundColor Yellow
+}
+
+function Write-Error {
+    param([string]$Message)
+    Write-Host "✗ $Message" -ForegroundColor Red
+}
 
 # Banner
 Write-Host ""

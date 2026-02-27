@@ -20,6 +20,9 @@
 .EXAMPLE
     .\setup-governance.ps1 -Tier Standard -Tool copilot
     Non-interactive mode
+.EXAMPLE
+    .\setup-governance.ps1 -Tier Standard -Tool copilot -OverwriteAll
+    Non-interactive mode with overwrite all files
 #>
 
 param(
@@ -31,7 +34,9 @@ param(
     
     [string]$TargetPath = $PWD,
     
-    [string]$TemplateRepo = 'https://github.com/samdman/ai-governance-templates.git'
+    [string]$TemplateRepo = 'https://github.com/samdman/ai-governance-templates.git',
+    
+    [switch]$OverwriteAll
 )
 
 $ErrorActionPreference = 'Stop'
@@ -162,11 +167,16 @@ try {
     
     # Verify template structure
     $canonicalFile = Join-Path $tempDir "AI-GOVERNANCE.md"
+    $projectFile = Join-Path $tempDir "PROJECT.md"
     $tierFolder = Join-Path $tempDir "$Tier\ai-governance"
     $toolAdapter = Join-Path $tempDir "$($Tool.ToUpper()).md"
     
     if (-not (Test-Path $canonicalFile)) {
         Write-ErrMsg "Template validation failed: AI-GOVERNANCE.md not found"
+        exit 1
+    }
+    if (-not (Test-Path $projectFile)) {
+        Write-ErrMsg "Template validation failed: PROJECT.md not found"
         exit 1
     }
     if (-not (Test-Path $tierFolder)) {
@@ -182,15 +192,18 @@ try {
         param(
             [string]$Source,
             [string]$Destination,
-            [string]$Description
+            [string]$Description,
+            [bool]$Force = $false
         )
         
         if (Test-Path $Destination) {
-            Write-WarnMsg "File already exists: $Description"
-            $overwrite = Read-Host "Overwrite? (y/N)"
-            if ($overwrite -ne 'y' -and $overwrite -ne 'Y') {
-                Write-InfoMsg "Skipped: $Description"
-                return $false
+            if (-not $Force) {
+                Write-WarnMsg "File already exists: $Description"
+                $overwrite = Read-Host "Overwrite? (y/N)"
+                if ($overwrite -ne 'y' -and $overwrite -ne 'Y') {
+                    Write-InfoMsg "Skipped: $Description"
+                    return $false
+                }
             }
         }
         
@@ -204,10 +217,13 @@ try {
         return $true
     }
     
-    # Copy canonical policy
+    # Copy canonical policy and project config
     Write-InfoMsg "Installing governance files..."
     $canonicalDest = Join-Path $TargetPath "AI-GOVERNANCE.md"
-    Copy-WithPrompt -Source $canonicalFile -Destination $canonicalDest -Description "AI-GOVERNANCE.md" | Out-Null
+    Copy-WithPrompt -Source $canonicalFile -Destination $canonicalDest -Description "AI-GOVERNANCE.md" -Force $OverwriteAll | Out-Null
+    
+    $projectDest = Join-Path $TargetPath "PROJECT.md"
+    Copy-WithPrompt -Source $projectFile -Destination $projectDest -Description "PROJECT.md" -Force $OverwriteAll | Out-Null
     
     # Copy tier governance folder
     $tierDest = Join-Path $TargetPath "ai-governance"
@@ -218,14 +234,14 @@ try {
     $tierFiles = Get-ChildItem $tierFolder -File
     foreach ($file in $tierFiles) {
         $destFile = Join-Path $tierDest $file.Name
-        Copy-WithPrompt -Source $file.FullName -Destination $destFile -Description "ai-governance/$($file.Name)" | Out-Null
+        Copy-WithPrompt -Source $file.FullName -Destination $destFile -Description "ai-governance/$($file.Name)" -Force $OverwriteAll | Out-Null
     }
     
     # Copy tool adapter
     $toolAdapterName = "$($Tool.ToUpper()).md"
     $toolAdapterDest = Join-Path $TargetPath $toolAdapterName
     if (Test-Path $toolAdapter) {
-        Copy-WithPrompt -Source $toolAdapter -Destination $toolAdapterDest -Description $toolAdapterName | Out-Null
+        Copy-WithPrompt -Source $toolAdapter -Destination $toolAdapterDest -Description $toolAdapterName -Force $OverwriteAll | Out-Null
     }
     
     Write-Host ""
@@ -290,6 +306,7 @@ If there are conflicts:
     
     Write-InfoMsg "Files installed:"
     Write-Host "  - AI-GOVERNANCE.md (canonical policy)"
+    Write-Host "  - PROJECT.md (project configuration)"
     Write-Host "  - ai-governance/* ($Tier tier rules)"
     Write-Host "  - $toolAdapterName (tool adapter)"
     if ($Tool -eq 'copilot') {
@@ -308,6 +325,7 @@ If there are conflicts:
         'gemini' {
             Write-Host "  1. Open Gemini and start a new conversation"
             Write-Host "  2. Upload these files to the conversation:"
+            Write-Host "     - PROJECT.md"
             Write-Host "     - AI-GOVERNANCE.md"
             Write-Host "     - GEMINI.md"
             Write-Host "     - All files from ai-governance/ folder"
@@ -316,6 +334,7 @@ If there are conflicts:
         'claude' {
             Write-Host "  1. Open Claude and start a new conversation"
             Write-Host "  2. Upload these files to the conversation:"
+            Write-Host "     - PROJECT.md"
             Write-Host "     - AI-GOVERNANCE.md"
             Write-Host "     - CLAUDE.md"
             Write-Host "     - All files from ai-governance/ folder"
@@ -326,9 +345,10 @@ If there are conflicts:
     Write-Host ""
     Write-InfoMsg "Verification checklist:"
     Write-Host "  [ ] Review AI-GOVERNANCE.md to understand policy precedence"
-    Write-Host "  [ ] Review ai-governance/ tier files for your tech stack"
+    Write-Host "  [ ] Customize PROJECT.md with your tech stack and preferences"
+    Write-Host "  [ ] Review ai-governance/ tier files for your project"
     Write-Host "  [ ] Customize governance rules if needed (edit tier files)"
-    Write-Host "  [ ] Commit governance files to version control"
+    Write-Host "  [ ] Commit all governance files to version control"
     Write-Host ""
 }
 finally {

@@ -7,8 +7,9 @@
 # then downloads and installs governance files.
 #
 # Usage:
-#   ./setup-governance.sh                    # Interactive mode
-#   ./setup-governance.sh Standard copilot   # Non-interactive mode
+#   ./setup-governance.sh                       # Interactive mode
+#   ./setup-governance.sh Standard copilot      # Non-interactive mode
+#   ./setup-governance.sh Standard copilot -y   # Non-interactive with overwrite all
 
 set -e
 
@@ -30,6 +31,14 @@ TIER="${1:-}"
 TOOL="${2:-}"
 TARGET_PATH="${3:-.}"
 TEMPLATE_REPO="${TEMPLATE_REPO:-https://github.com/samdman/ai-governance-templates.git}"
+OVERWRITE_ALL=""
+
+# Check for overwrite flag
+for arg in "$@"; do
+    if [ "$arg" = "--overwrite-all" ] || [ "$arg" = "-y" ]; then
+        OVERWRITE_ALL="true"
+    fi
+done
 
 # Banner
 echo ""
@@ -147,11 +156,17 @@ fi
 
 # Verify template structure
 CANONICAL_FILE="$TEMP_DIR/AI-GOVERNANCE.md"
+PROJECT_FILE="$TEMP_DIR/PROJECT.md"
 TIER_FOLDER="$TEMP_DIR/$TIER/ai-governance"
 TOOL_ADAPTER="$TEMP_DIR/$(echo $TOOL | tr '[:lower:]' '[:upper:]').md"
 
 if [ ! -f "$CANONICAL_FILE" ]; then
     print_error "Template validation failed: AI-GOVERNANCE.md not found"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_FILE" ]; then
+    print_error "Template validation failed: PROJECT.md not found"
     exit 1
 fi
 
@@ -168,13 +183,16 @@ copy_with_prompt() {
     local source="$1"
     local destination="$2"
     local description="$3"
+    local force="${4:-false}"
     
     if [ -f "$destination" ]; then
-        print_warning "File already exists: $description"
-        read -p "Overwrite? (y/N): " overwrite
-        if [ "$overwrite" != "y" ] && [ "$overwrite" != "Y" ]; then
-            print_info "Skipped: $description"
-            return 1
+        if [ "$force" != "true" ]; then
+            print_warning "File already exists: $description"
+            read -p "Overwrite? (y/N): " overwrite
+            if [ "$overwrite" != "y" ] && [ "$overwrite" != "Y" ]; then
+                print_info "Skipped: $description"
+                return 1
+            fi
         fi
     fi
     
@@ -187,22 +205,23 @@ copy_with_prompt() {
 # Install governance files
 print_info "Installing governance files..."
 
-# Copy canonical policy
-copy_with_prompt "$CANONICAL_FILE" "$TARGET_PATH/AI-GOVERNANCE.md" "AI-GOVERNANCE.md"
+# Copy canonical policy and project config
+copy_with_prompt "$CANONICAL_FILE" "$TARGET_PATH/AI-GOVERNANCE.md" "AI-GOVERNANCE.md" "$OVERWRITE_ALL"
+copy_with_prompt "$PROJECT_FILE" "$TARGET_PATH/PROJECT.md" "PROJECT.md" "$OVERWRITE_ALL"
 
 # Copy tier governance folder
 mkdir -p "$TARGET_PATH/ai-governance"
 for file in "$TIER_FOLDER"/*; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
-        copy_with_prompt "$file" "$TARGET_PATH/ai-governance/$filename" "ai-governance/$filename"
+        copy_with_prompt "$file" "$TARGET_PATH/ai-governance/$filename" "ai-governance/$filename" "$OVERWRITE_ALL"
     fi
 done
 
 # Copy tool adapter
 TOOL_ADAPTER_NAME="$(echo $TOOL | tr '[:lower:]' '[:upper:]').md"
 if [ -f "$TOOL_ADAPTER" ]; then
-    copy_with_prompt "$TOOL_ADAPTER" "$TARGET_PATH/$TOOL_ADAPTER_NAME" "$TOOL_ADAPTER_NAME"
+    copy_with_prompt "$TOOL_ADAPTER" "$TARGET_PATH/$TOOL_ADAPTER_NAME" "$TOOL_ADAPTER_NAME" "$OVERWRITE_ALL"
 fi
 
 echo ""
@@ -263,6 +282,7 @@ echo ""
 
 print_info "Files installed:"
 echo "  - AI-GOVERNANCE.md (canonical policy)"
+echo "  - PROJECT.md (project configuration)"
 echo "  - ai-governance/* ($TIER tier rules)"
 echo "  - $TOOL_ADAPTER_NAME (tool adapter)"
 if [ "$TOOL" = "copilot" ]; then
@@ -281,6 +301,7 @@ case $TOOL in
     gemini)
         echo "  1. Open Gemini and start a new conversation"
         echo "  2. Upload these files to the conversation:"
+        echo "     - PROJECT.md"
         echo "     - AI-GOVERNANCE.md"
         echo "     - GEMINI.md"
         echo "     - All files from ai-governance/ folder"
@@ -289,6 +310,7 @@ case $TOOL in
     claude)
         echo "  1. Open Claude and start a new conversation"
         echo "  2. Upload these files to the conversation:"
+        echo "     - PROJECT.md"
         echo "     - AI-GOVERNANCE.md"
         echo "     - CLAUDE.md"
         echo "     - All files from ai-governance/ folder"
@@ -299,7 +321,8 @@ esac
 echo ""
 print_info "Verification checklist:"
 echo "  [ ] Review AI-GOVERNANCE.md to understand policy precedence"
-echo "  [ ] Review ai-governance/ tier files for your tech stack"
+echo "  [ ] Customize PROJECT.md with your tech stack and preferences"
+echo "  [ ] Review ai-governance/ tier files for your project"
 echo "  [ ] Customize governance rules if needed (edit tier files)"
-echo "  [ ] Commit governance files to version control"
+echo "  [ ] Commit all governance files to version control"
 echo ""

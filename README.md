@@ -101,6 +101,24 @@ Then specify the chosen tier path, for example:
 Adapters define interaction format and workflow hints only.
 If any adapter conflicts with canonical/tier policy, canonical + tier docs win.
 
+## Does the tool pick up governance files automatically?
+
+Short answer: it depends on the tool.
+
+- **Copilot:** Yes, after running setup with `copilot`, the script creates `.github/copilot-instructions.md`.
+	- Copilot automatically reads this file at the repo level.
+	- You do **not** need to manually attach `AI-GOVERNANCE.md`, `ai-governance/*`, and `COPILOT.md` on every prompt.
+	- Keep those files in the repository so the instructions remain valid.
+
+- **Gemini / Claude:** Usually no automatic repo pickup.
+	- You should add/upload governance context to the session (or configure persistent project instructions if your Gemini/Claude workspace supports it).
+	- Minimum context to provide:
+		1. `AI-GOVERNANCE.md`
+		2. selected `ai-governance/*` tier files
+		3. tool adapter (`GEMINI.md` or `CLAUDE.md`)
+
+When in doubt, re-attach the canonical file + tier docs + adapter at the start of a new conversation.
+
 ## Enforcement pattern
 - Source of truth order:
 	1. `AI-GOVERNANCE.md`

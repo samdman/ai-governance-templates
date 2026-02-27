@@ -9,3 +9,6 @@
 - Traces/metrics must be partitionable by tenant.
 - No PII in logs.
 - Trace AI calls separately (span + latency + token/cost where available).
+- Use environment-specific sampling with stricter controls for high-traffic workloads.
+- Define retention and archival policy for traces, metrics, and audit-adjacent logs.
+- Alert on telemetry ingestion anomalies and sustained cardinality spikes.

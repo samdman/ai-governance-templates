@@ -13,3 +13,6 @@
 ## Guardrails
 - All list endpoints paginated.
 - No query > 1000 rows without paging.
+- Cache read-heavy query models when data staleness is acceptable.
+- Use optimistic concurrency handling for high-contention updates.
+

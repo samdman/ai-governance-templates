@@ -3,6 +3,10 @@
 This registry defines reusable AI governance skills for this project template.
 Skills activate based on context and enforce standards.
 
+Tier usage for this file:
+- Active by default: Lite skills
+- Reference only unless explicitly enabled: Standard and Enterprise skills
+
 Each skill includes:
 - Activation triggers (when to use)
 - Validations (what to ensure)
@@ -111,7 +115,7 @@ Each skill includes:
 
 ### Validate
 - TenantId present in aggregates
-- Queries filter by TenantId (prefer global query filters)
+- Queries filter by TenantId (global query filters required)
 - Events include TenantId
 - Background jobs run in tenant scope
 

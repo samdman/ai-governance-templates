@@ -15,3 +15,6 @@
 - Rate limiting enabled.
 - Per-tenant throttling for heavy endpoints/jobs.
 - Bulk operations must be batched.
+- Cache read-heavy tenant-safe responses where staleness is acceptable.
+- Use optimistic concurrency and retry strategy for contention-prone updates.
+- Validate tenant-partitioned indexes for heavy query paths.
